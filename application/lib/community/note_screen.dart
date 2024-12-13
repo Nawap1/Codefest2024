@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'filter_note_screen.dart';
 
 class NoteScreen extends StatelessWidget {
   @override
@@ -68,13 +69,13 @@ class NoteScreen extends StatelessWidget {
                           children: labels.map((label) {
                             return InkWell(
                               onTap: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) =>
-                                //         FilteredNotesScreen(label: label),
-                                //   ),
-                                // );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        FilteredNotesScreen(label: label),
+                                  ),
+                                );
                               },
                               child: Chip(
                                 label: Text(
