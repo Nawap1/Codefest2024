@@ -91,16 +91,16 @@ class LandingPage extends HookWidget {
                   duration: Duration(milliseconds: 800),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigator.pushReplacement(
-                      //   context,
-                      //   PageRouteBuilder(
-                      //     pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
-                      //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      //       return FadeTransition(opacity: animation, child: child);
-                      //     },
-                      //     transitionDuration: Duration(milliseconds: 800),
-                      //   ),
-                      // );
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(opacity: animation, child: child);
+                          },
+                          transitionDuration: Duration(milliseconds: 800),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
