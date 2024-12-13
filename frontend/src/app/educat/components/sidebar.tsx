@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { cn } from "@/app/studybee/lib/utils"
+import { cn } from "@/app/educat/lib/utils"
 
 interface SidebarProps {
   isCollapsed: boolean;
