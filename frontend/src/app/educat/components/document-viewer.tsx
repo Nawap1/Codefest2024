@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useState } from 'react'
-import { cn } from "@/app/studybee/lib/utils"
+import { cn } from "@/app/educat/lib/utils"
 import {
   Dialog,
   DialogContent,
