@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "652240425924",
+    "firebase_url": "https://codefest-c6abe-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "codefest-c6abe",
+    "storage_bucket": "codefest-c6abe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:652240425924:android:1eb5102167b9568f8f4a91",
+        "android_client_info": {
+          "package_name": "com.example.cat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9Lg34KQvrxpd8kyzLb5hXIrK5cerN0qI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
