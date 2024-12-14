@@ -1,58 +1,70 @@
+// app/community/page.tsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import notesData from "./data/notes.json";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { firebaseApp } from "@/lib/firebase"; // Centralized Firebase initialization
+import  Header  from "../MainPage/header";
 
 export default function Community() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notes, setNotes] = useState([]);
 
-  const filteredNotes = notesData.notes.filter(
-    (note) =>
-      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.labels.some((label) =>
-        label.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  );
+  const db = getFirestore(firebaseApp);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      setIsLoading(true);
+      try {
+        const querySnapshot = await getDocs(collection(db, "notes"));
+        const notesData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setNotes(notesData);
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNotes();
+  }, [db]);
+
+  // Optimize filtering with useMemo
+  const filteredNotes = useMemo(() => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    return notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(lowerCaseQuery) ||
+        note.labels.some((label) => label.toLowerCase().includes(lowerCaseQuery))
+    );
+  }, [notes, searchQuery]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <header className="bg-white py-4 shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <Link href="/">
-              <span className="text-blue-600 hover:text-blue-800 font-bold text-xl transition-colors">
-                Study Notes App
-              </span>
-            </Link>
-            <nav className="flex items-center gap-6">
-              <Link href="/community">
-                <span className="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
-                  Community Notes
-                </span>
-              </Link>
-              {/* Add more nav items as needed */}
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="bg-[#E5EBFF] min-h-screen">
+      {/* Header and Navigation - No changes needed */}
+      <Header/>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Title and Description - No changes needed */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
-            Community Notes
-          </h1>
+        <h1 className="text-4xl font-roboto font-bold text-gray-800 mb-2">
+          Community Notes
+        </h1>
           <p className="text-gray-600">
             Explore and learn from notes shared by other students
           </p>
         </div>
 
         {/* Enhanced Search Bar */}
-        <div className="mb-8 w-full max-w-md mx-auto relative">
+        <div className="mb-8 w-full max-w-md mx-auto relative group">
           <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -65,7 +77,13 @@ export default function Community() {
           <input
             type="text"
             placeholder="Search notes by title or label..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white"
+            className="w-full pl-10 pr-4 py-3 border-0 rounded-xl 
+            bg-white/80 backdrop-blur-sm shadow-lg
+            text-gray-700 placeholder-gray-400
+            transition-all duration-300 ease-in-out
+            hover:bg-white/90 hover:shadow-xl
+            focus:outline-none focus:ring-2 focus:ring-blue-400 focus: none
+            focus:bg-white focus:shadow-md"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -93,7 +111,9 @@ export default function Community() {
           </div>
         ) : filteredNotes.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-gray-600 text-lg">No notes found matching your search.</p>
+            <p className="text-gray-600 text-lg">
+              No notes found matching your search.
+            </p>
             <button
               onClick={() => setSearchQuery("")}
               className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
@@ -103,48 +123,61 @@ export default function Community() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Improved Note Card with Link Component */}
             {filteredNotes.map((note) => (
-              <Link href={`/community/notes/${note.id}`} key={note.id}>
-                <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between h-full border border-gray-100 hover:border-blue-500">
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
-                      {note.title}
-                    </h2>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {note.labels.map((label, index) => (
-                        <span
-                          key={index}
-                          className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors"
+              <Link
+                href={`/community/notes/${note.id}`}
+                key={note.id}
+                className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between h-full border border-gray-100"
+              >
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-800 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
+                    {note.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {note.labels.map((label) => (
+                      <span
+                        key={label}
+                        className="bg-[#AEB4FF] text-[#0A0C1C] px-3 py-1 rounded-full text-sm font-medium hover:bg-[#C2C7FF] transition-colors"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                  {/* Optimized Markdown Preview */}
+                  <ReactMarkdown
+                    className="prose prose-sm text-gray-600 line-clamp-3 mt-2 max-w-none"
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      // Hide headers and optimize other elements for preview
+                      h1: () => null,
+                      h2: () => null,
+                      h3: () => null,
+                      h4: () => null,
+                      h5: () => null,
+                      h6: () => null,
+                      p: ({ children }) => (
+                        <p className="text-gray-600 mb-2 last:mb-0">
+                          {children}
+                        </p>
+                      ),
+                      a: ({ children, href }) => (
+                        <a
+                          href={href}
+                          className="text-blue-600 hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                    <ReactMarkdown
-                      className="prose prose-sm text-gray-600 line-clamp-3 mt-2 max-w-none"
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ children }) => (
-                          <p className="text-gray-600 mb-2 last:mb-0">{children}</p>
-                        ),
-                        a: ({ children }) => (
-                          <span className="text-blue-600 hover:underline">{children}</span>
-                        ),
-                        // Hide headers in preview
-                        h1: () => <></>,
-                        h2: () => <></>,
-                        h3: () => <></>,
-                        h4: () => <></>,
-                        h5: () => <></>,
-                        h6: () => <></>,
-                      }}
-                    >
-                      {note.text.substring(0, 300)}
-                    </ReactMarkdown>
-                  </div>
-                  <div className="mt-4 flex items-center text-sm text-gray-500">
-                    <span className="ml-auto">Read more →</span>
-                  </div>
+                          {children}
+                        </a>
+                      ),
+                    }}
+                  >
+                    {note.text.substring(0, 300)}
+                  </ReactMarkdown>
+                </div>
+                <div className="mt-4 flex items-center text-sm text-gray-500">
+                  <span className="ml-auto">Read more →</span>
                 </div>
               </Link>
             ))}

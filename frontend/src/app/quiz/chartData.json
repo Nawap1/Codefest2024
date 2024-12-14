@@ -1,0 +1,26 @@
+[
+    {
+      "keywords": ["hello", "hi", "hey"],
+      "response": "Hello there! How can I assist you today?"
+    },
+    {
+      "keywords": ["how are you", "how's it going"],
+      "response": "I'm doing well, thank you. How about you?"
+    },
+    {
+      "keywords": ["weather", "temperature"],
+      "response": "I'm sorry, I don't have information about the weather at the moment."
+    },
+    {
+      "keywords": ["bye", "goodbye", "see you"],
+      "response": "Goodbye! Have a great day."
+    },
+    {
+      "keywords": ["help", "support", "assistance"],
+      "response": "I can help you with a variety of topics. Please specify what you need assistance with."
+    },
+    {
+      "keywords": ["thank you", "thanks"],
+      "response": "You're welcome!"
+    }
+]

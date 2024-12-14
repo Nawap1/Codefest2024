@@ -1,93 +1,64 @@
-"use client"
+import Header from '../MainPage/header';
+import { Hero } from '../MainPage/hero';
+import { Community } from '../MainPage/community';
 
-import { useState, useEffect } from "react"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import { Navbar } from "@/app/educat/components/navbar"
-import { Sidebar } from "@/app/educat/components/sidebar"
-import { ContentArea } from "@/app/educat/components/content-area"
-import { DocumentViewer } from "@/app/educat/components/document-viewer"
-import { cn } from "@/app/educat/lib/utils"
-
-export default function Page() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [isDocViewerCollapsed, setIsDocViewerCollapsed] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [contentType, setContentType] = useState<"document" | "youtube">("document")
-  const [isMobile, setIsMobile] = useState(false)
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  const handleSubmit = async (data: FormData) => {
-    setIsProcessing(true)
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsProcessing(false)
-  }
-
+function EduCat() {
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <Navbar />
-      
-      {isProcessing ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Processing your content</h2>
-            <p className="text-muted-foreground">Please don't close this tab...</p>
-          </div>
-        </div>
-      ) : (
-        <ResizablePanelGroup direction="horizontal" className="flex-1">
-          <ResizablePanel
-            defaultSize={20}
-            minSize={0}
-            maxSize={30}
-            collapsible={true}
-            collapsedSize={4}
-            onCollapse={() => setIsSidebarCollapsed(true)}
-            onExpand={() => setIsSidebarCollapsed(false)}
-            className={cn(
-              "transition-all duration-300",
-              isSidebarCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out"
-            )}
-          >
-            <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
-
-          <ResizablePanel defaultSize={isMobile ? 100 : 50} minSize={30}>
-            <ContentArea />
-          </ResizablePanel>
-
-          {!isMobile && <ResizableHandle withHandle />}
-
-          {!isMobile && (
-            <ResizablePanel 
-              defaultSize={30} 
-              minSize={20} 
-              maxSize={50}
-              collapsible={true}
-              collapsedSize={4}
-              onCollapse={() => setIsDocViewerCollapsed(true)}
-              onExpand={() => setIsDocViewerCollapsed(false)}
+    <div className="min-h-screen bg-[#EFF2FF] relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="100%" 
+          height="100%" 
+          className="absolute top-0 left-0 opacity-[0.05]"
+        >
+          <defs>
+            <pattern 
+              id="pattern" 
+              width="80" 
+              height="80" 
+              patternUnits="userSpaceOnUse"
             >
-              <DocumentViewer
-                contentType={contentType}
-                isCollapsed={isDocViewerCollapsed}
-                setIsCollapsed={setIsDocViewerCollapsed}
+              <path 
+                d="M0 0 L40 0 Q80 0, 80 40 L80 80 Q40 80, 0 40 Z" 
+                fill="none" 
+                stroke="#5661F6" 
+                strokeWidth="0.5" 
+                opacity="0.1"
               />
-            </ResizablePanel>
-          )}
-        </ResizablePanelGroup>
-      )}
+              <circle 
+                cx="40" 
+                cy="40" 
+                r="2" 
+                fill="#6366F1" 
+                opacity="0.1"
+              />
+            </pattern>
+          </defs>
+          <rect 
+            width="100%" 
+            height="100%" 
+            fill="url(#pattern)"
+          />
+        </svg>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#EFF2FF]/20 to-[#6366F1]/10"></div>
+
+        {/* Floating Shapes */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#6366F1]/10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-[#5661F6]/10 rounded-full blur-2xl"></div>
+      </div>
+
+      {/* Page Content */}
+      <div className="relative z-10">
+        <Header />
+        <Hero />
+        <Community />
+      </div>
     </div>
   )
 }
 
+export default EduCat;
