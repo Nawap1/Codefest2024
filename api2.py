@@ -1,10 +1,11 @@
+import os
+import google.generativeai as genai
 from fastapi import FastAPI, HTTPException, File, Form, UploadFile
 from typing import Optional, Dict, List
 from pydantic import BaseModel
 from pipeline import DocumentExtractor  # Ensure this is correctly implemented
 import redis
 from dotenv import load_dotenv
-import os
 from redisvl.utils.vectorize import HFTextVectorizer
 from redisvl.redis.utils import array_to_buffer
 from tqdm.auto import tqdm
@@ -15,10 +16,9 @@ from redisvl.query import VectorQuery
 import aiohttp
 from urllib.parse import urlparse
 import json
-from google import genai
 
 load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 index_name = "redisvl"
@@ -53,14 +53,16 @@ genai.configure(api_key=GOOGLE_API_KEY)
 
 # Model configuration
 generation_config = {
-  "temperature": 1,
-  "top_p": 0.95,
-  "top_k": 64,
-  "max_output_tokens": 8192,
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 64,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+
 }
 
 model = genai.GenerativeModel(
-    model_name=GOOGLE_API_KEY,
+    model_name="gemini-2.0-flash-exp",
     generation_config=generation_config,
 )
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=2500, chunk_overlap=200)
@@ -75,7 +77,6 @@ async def lifespan(app: FastAPI):
     index = SearchIndex.from_dict(schema)
     index.set_client(r)
     index.create(overwrite=True, drop=True)
-
 
     yield
     r.flushdb()
@@ -109,7 +110,9 @@ async def extract_text(
         HTTPException: If neither file nor URL is provided or if extraction fails
     """
     if not file and not url:
-        raise HTTPException(status_code=400, detail="Either file or url must be provided")
+        raise HTTPException(
+            status_code=400, detail="Either file or url must be provided"
+        )
 
     if file and url:
         raise HTTPException(
@@ -129,7 +132,7 @@ async def extract_text(
                     f.write(await file.read())
 
                 extracted_text_dict = extractor.extract_content(file_location)
-                extracted_text = extracted_text_dict['content']
+                extracted_text = extracted_text_dict["content"]
                 source_type = "file"
 
             finally:
@@ -157,7 +160,7 @@ async def extract_text(
                         )
 
             extracted_text_dict = extractor.extract_content(url)
-            extracted_text = extracted_text_dict['content']
+            extracted_text = extracted_text_dict["content"]
             source_type = "url"
 
         return TextExtractionResponse(
@@ -211,7 +214,7 @@ def retrieve_documents(query: str) -> list:
     # Execute query
     results = index.query(vector_query)
     return results
-  
+
 @app.post("/chat")
 async def generate_response(chat_history: List[Dict], query: str):
     results = retrieve_documents(query)
@@ -219,15 +222,15 @@ async def generate_response(chat_history: List[Dict], query: str):
 
     # Start a new chat session for each request
     chat = model.start_chat(history=[])
-    
+
     # Add context to the prompt
     prompt = f"Context: {context}\n\n"
 
     # Format the chat history and add to prompt
     for message in chat_history:
-        if message['role'] == 'user':
+        if message["role"] == "user":
             prompt += f"user: {message['content']}\n"
-        elif message['role'] == 'bot':
+        elif message["role"] == "model":
             prompt += f"model: {message['content']}\n"
 
     # Add the current query
@@ -235,7 +238,7 @@ async def generate_response(chat_history: List[Dict], query: str):
 
     # Generate response using the formatted prompt
     response = chat.send_message(prompt)
-    
+
     return {"role": "model", "content": response.text}
 
 class NotesRequest(BaseModel):
@@ -278,20 +281,6 @@ async def generate_notes(request: NotesRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/QA")
-async def generate_qa(content: str):
-    try:
-        prompt = f"""
-        Please provide some Q&A based on the following content:
-        {content}
-        """
-
-        response = model.generate_content(prompt)
-
-        return {"message": "Q&A generated successfully", "content": response.text}
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 class Flashcard(BaseModel):
     front: str
